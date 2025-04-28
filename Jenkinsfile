@@ -24,16 +24,16 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Clean up existing containers
+                    // Cleanup existing containers
                     bat 'docker-compose down || exit 0'
                     
-                    // Start new containers
+                    // Start containers with healthcheck
                     bat 'docker-compose up -d'
                     
-                    // Fixed wait command - removed input redirection
+                    // Proper wait command with output suppression
                     bat 'timeout /t 15 > nul'
                     
-                    // Run tests
+                    // Run Windows-compatible tests
                     bat 'test.bat'
                 }
             }
@@ -51,15 +51,9 @@ pipeline {
     
     post {
         always {
-            // Cleanup with proper path
+            // Cleanup with absolute path
             bat 'cd /d C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\anon && docker-compose down || exit 0'
             cleanWs()
-        }
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed!'
         }
     }
 }
