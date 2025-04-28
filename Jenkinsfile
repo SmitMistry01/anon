@@ -30,8 +30,8 @@ pipeline {
                     // Start containers
                     bat 'docker-compose up -d'
                     
-                    // Wait for website to be ready
-                    bat 'timeout /t 15 /nobreak >nul'
+                    // Wait for containers to start (fixed timeout command)
+                    bat 'timeout /t 15 > nul'
                     
                     // Run tests
                     bat 'test.bat'
@@ -54,11 +54,11 @@ pipeline {
     
     post {
         always {
+            // Clean up containers (with proper path)
+            bat 'cd /d C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\anon && docker-compose down || exit 0'
+            
             // Clean up workspace
             cleanWs()
-            
-            // Ensure containers are stopped after pipeline runs
-            bat 'docker-compose down || exit 0'
         }
         success {
             echo 'Pipeline completed successfully!'
