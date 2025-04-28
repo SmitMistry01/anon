@@ -24,14 +24,14 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Start the container for testing
-                    sh 'docker-compose up -d'
+                    // Start the container for testing (Windows version)
+                    bat 'docker-compose up -d'
                     
-                    // Make the test script executable
-                    sh 'chmod +x test.sh'
+                    // Make the test script executable (only needed on Linux)
+                    // bat 'call test.bat'  // Use this if you have a Windows batch test script
                     
-                    // Run the test
-                    sh './test.sh'
+                    // Run the test (Windows version)
+                    bat 'test.bat'  // You should create a test.bat file for Windows
                 }
             }
         }
@@ -39,11 +39,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Stop and remove existing container if running
-                    sh 'docker-compose down || true'
+                    // Stop and remove existing container if running (Windows version)
+                    bat 'docker-compose down || exit 0'
                     
-                    // Start the new container
-                    sh 'docker-compose up -d'
+                    // Start the new container (Windows version)
+                    bat 'docker-compose up -d'
                 }
             }
         }
@@ -61,4 +61,4 @@ pipeline {
             echo 'Pipeline failed!'
         }
     }
-} 
+}
