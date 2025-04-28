@@ -2,6 +2,7 @@ pipeline {
     agent any
     environment {
         DOCKER_IMAGE = 'ecommerce-web'
+        CONTAINER_NAME = 'ecommerce-web-container' 
     }
     stages {
         stage('Checkout') {
@@ -19,8 +20,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 bat '''
-                    docker stop %CONTAINER_NAME% || true
-                    docker rm %CONTAINER_NAME% || true
+                    docker stop %CONTAINER_NAME% || exit 0
+                    docker rm %CONTAINER_NAME% || exit 0
                     docker run -d -p 80:80 --name %CONTAINER_NAME% %DOCKER_IMAGE%
                 '''
             }
