@@ -24,14 +24,17 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Start the container for testing (Windows version)
+                    // Clean up any existing containers
+                    bat 'docker-compose down || exit 0'
+                    
+                    // Start containers
                     bat 'docker-compose up -d'
                     
-                    // Make the test script executable (only needed on Linux)
-                    // bat 'call test.bat'  // Use this if you have a Windows batch test script
+                    // Wait for website to be ready
+                    bat 'timeout /t 15 /nobreak >nul'
                     
-                    // Run the test (Windows version)
-                    bat 'test.bat'  // You should create a test.bat file for Windows
+                    // Run tests
+                    bat 'test.bat'
                 }
             }
         }
@@ -39,10 +42,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Stop and remove existing container if running (Windows version)
+                    // Stop and remove existing container
                     bat 'docker-compose down || exit 0'
                     
-                    // Start the new container (Windows version)
+                    // Start new container
                     bat 'docker-compose up -d'
                 }
             }
@@ -53,6 +56,9 @@ pipeline {
         always {
             // Clean up workspace
             cleanWs()
+            
+            // Ensure containers are stopped after pipeline runs
+            bat 'docker-compose down || exit 0'
         }
         success {
             echo 'Pipeline completed successfully!'

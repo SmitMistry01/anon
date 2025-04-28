@@ -4,7 +4,7 @@
 timeout /t 10 /nobreak >nul
 
 :: Check if the website is accessible
-for /f "delims=" %%r in ('curl -s -o nul -w "%%{http_code}" http://localhost:80') do (
+for /f "delims=" %%r in ('curl -s -o nul -w "%%{http_code}" http://localhost:8080') do (
     set "response=%%r"
 )
 
