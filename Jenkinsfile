@@ -1,59 +1,53 @@
 pipeline {
     agent any
-    
     environment {
         DOCKER_IMAGE = 'ecommerce-web'
-        DOCKER_TAG = "${BUILD_NUMBER}"
     }
-    
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-        
-        stage('Build Docker Image') {
+        stage('Install Dependencies') {
             steps {
-                script {
-                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                }
+                bat 'npm ci'
             }
         }
-        
-        stage('Test') {
+        stage('Lint') {
             steps {
-                script {
-                    // Cleanup existing containers
-                    bat 'docker-compose down || exit 0'
-                    
-                    // Start containers with healthcheck
-                    bat 'docker-compose up -d'
-                    
-                    // Proper wait command with output suppression
-                    bat 'timeout /t 15 > nul'
-                    
-                    // Run Windows-compatible tests
-                    bat 'test.bat'
-                }
+                bat 'npm run lint'
             }
         }
-        
+        stage('Build') {
+            steps {
+                bat 'npm run build'
+            }
+        }
+        stage('Docker Build') {
+            steps {
+                bat 'docker build -t %DOCKER_IMAGE% .'
+            }
+        }
         stage('Deploy') {
             steps {
-                script {
-                    bat 'docker-compose down || exit 0'
-                    bat 'docker-compose up -d'
-                }
+                bat '''
+                    docker stop %DOCKER_IMAGE% || true
+                    docker rm %DOCKER_IMAGE% || true
+                    docker run -d -p 80:80 --name %DOCKER_IMAGE% %DOCKER_IMAGE%
+                '''
             }
         }
     }
-    
     post {
         always {
-            // Cleanup with absolute path
-            bat 'cd /d C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\anon && docker-compose down || exit 0'
             cleanWs()
+        }
+        success {
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
