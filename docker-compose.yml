@@ -1,13 +1,8 @@
 services:
   web:
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
-      interval: 5s
-      timeout: 2s
-      retries: 5
     build: .
     ports:
       - "80:80"
     volumes:
       - .:/usr/share/nginx/html
-    restart: unless-stopped
+    restart: unless-stopped 

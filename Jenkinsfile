@@ -9,32 +9,19 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Install Dependencies') {
-            steps {
-                bat 'npm ci'
-            }
-        }
-        stage('Lint') {
-            steps {
-                bat 'npm run lint'
-            }
-        }
-        stage('Build') {
-            steps {
-                bat 'npm run build'
-            }
-        }
+
         stage('Docker Build') {
             steps {
                 bat 'docker build -t %DOCKER_IMAGE% .'
             }
         }
+
         stage('Deploy') {
             steps {
                 bat '''
-                    docker stop %DOCKER_IMAGE% || true
-                    docker rm %DOCKER_IMAGE% || true
-                    docker run -d -p 80:80 --name %DOCKER_IMAGE% %DOCKER_IMAGE%
+                    docker stop %CONTAINER_NAME% || true
+                    docker rm %CONTAINER_NAME% || true
+                    docker run -d -p 80:80 --name %CONTAINER_NAME% %DOCKER_IMAGE%
                 '''
             }
         }
@@ -44,10 +31,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo 'Pipeline succeeded!'
+            echo 'Static site deployed successfully!'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo 'Deployment failed!'
         }
     }
 }
