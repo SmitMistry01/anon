@@ -24,13 +24,13 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Clean up any existing containers
+                    // Clean up existing containers
                     bat 'docker-compose down || exit 0'
                     
-                    // Start containers
+                    // Start new containers
                     bat 'docker-compose up -d'
                     
-                    // Wait for containers to start (fixed timeout command)
+                    // Fixed wait command - removed input redirection
                     bat 'timeout /t 15 > nul'
                     
                     // Run tests
@@ -42,10 +42,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Stop and remove existing container
                     bat 'docker-compose down || exit 0'
-                    
-                    // Start new container
                     bat 'docker-compose up -d'
                 }
             }
@@ -54,10 +51,8 @@ pipeline {
     
     post {
         always {
-            // Clean up containers (with proper path)
+            // Cleanup with proper path
             bat 'cd /d C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\anon && docker-compose down || exit 0'
-            
-            // Clean up workspace
             cleanWs()
         }
         success {
